@@ -12,6 +12,7 @@ var defaults = require('./defaults');
  * @param {Object} defaultConfig The default config for the instance
  * @return {Axios} A new instance of Axios
  */
+// 创建axios实例
 function createInstance(defaultConfig) {
   var context = new Axios(defaultConfig);
   var instance = bind(Axios.prototype.request, context);
@@ -31,6 +32,7 @@ var axios = createInstance(defaults);
 // Expose Axios class to allow class inheritance
 axios.Axios = Axios;
 
+// 创建实例-工厂模式 ，实际上是去调用 createInstance 方法
 // Factory for creating new instances
 axios.create = function create(instanceConfig) {
   return createInstance(mergeConfig(axios.defaults, instanceConfig));
@@ -41,12 +43,14 @@ axios.Cancel = require('./cancel/Cancel');
 axios.CancelToken = require('./cancel/CancelToken');
 axios.isCancel = require('./cancel/isCancel');
 
+// axios并发
 // Expose all/spread
 axios.all = function all(promises) {
   return Promise.all(promises);
 };
 axios.spread = require('./helpers/spread');
 
+// 导出axios实例
 module.exports = axios;
 
 // Allow use of default import syntax in TypeScript
