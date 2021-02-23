@@ -3,12 +3,16 @@
 var utils = require('./utils');
 var normalizeHeaderName = require('./helpers/normalizeHeaderName');
 
+// 定义post,put,patch请求的headers["Content-Type"]: 指示服务器文档的MIME 类型。帮助用户代理（浏览器）去处理接收到的数据。
 var DEFAULT_CONTENT_TYPE = {
-  'Content-Type': 'application/x-www-form-urlencoded'
+  'Content-Type': 'application/x-www-form-urlencoded',
 };
 
 function setContentTypeIfUnset(headers, value) {
-  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+  if (
+    !utils.isUndefined(headers) &&
+    utils.isUndefined(headers['Content-Type'])
+  ) {
     headers['Content-Type'] = value;
   }
 }
@@ -18,7 +22,10 @@ function getDefaultAdapter() {
   if (typeof XMLHttpRequest !== 'undefined') {
     // For browsers use XHR adapter
     adapter = require('./adapters/xhr');
-  } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
+  } else if (
+    typeof process !== 'undefined' &&
+    Object.prototype.toString.call(process) === '[object process]'
+  ) {
     // For node use HTTP adapter
     adapter = require('./adapters/http');
   }
@@ -28,41 +35,55 @@ function getDefaultAdapter() {
 var defaults = {
   adapter: getDefaultAdapter(),
 
-  transformRequest: [function transformRequest(data, headers) {
-    normalizeHeaderName(headers, 'Accept');
-    normalizeHeaderName(headers, 'Content-Type');
-    if (utils.isFormData(data) ||
-      utils.isArrayBuffer(data) ||
-      utils.isBuffer(data) ||
-      utils.isStream(data) ||
-      utils.isFile(data) ||
-      utils.isBlob(data)
-    ) {
+  // `transformRequest` 允许在向服务器发送前，修改请求数据
+  // 只能用在 'PUT', 'POST' 和 'PATCH' 这几个请求方法
+  // 后面数组中的函数必须返回一个字符串，或 ArrayBuffer，或 Stream
+  transformRequest: [
+    function transformRequest(data, headers) {
+      normalizeHeaderName(headers, 'Accept');
+      normalizeHeaderName(headers, 'Content-Type');
+      if (
+        utils.isFormData(data) ||
+        utils.isArrayBuffer(data) ||
+        utils.isBuffer(data) ||
+        utils.isStream(data) ||
+        utils.isFile(data) ||
+        utils.isBlob(data)
+      ) {
+        return data;
+      }
+      if (utils.isArrayBufferView(data)) {
+        return data.buffer;
+      }
+      if (utils.isURLSearchParams(data)) {
+        setContentTypeIfUnset(
+          headers,
+          'application/x-www-form-urlencoded;charset=utf-8'
+        );
+        return data.toString();
+      }
+      if (utils.isObject(data)) {
+        setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
+        return JSON.stringify(data);
+      }
       return data;
-    }
-    if (utils.isArrayBufferView(data)) {
-      return data.buffer;
-    }
-    if (utils.isURLSearchParams(data)) {
-      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
-      return data.toString();
-    }
-    if (utils.isObject(data)) {
-      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
-      return JSON.stringify(data);
-    }
-    return data;
-  }],
+    },
+  ],
 
-  transformResponse: [function transformResponse(data) {
-    /*eslint no-param-reassign:0*/
-    if (typeof data === 'string') {
-      try {
-        data = JSON.parse(data);
-      } catch (e) { /* Ignore */ }
-    }
-    return data;
-  }],
+  // `transformResponse` 在传递给 then/catch 前，允许修改响应数据
+  transformResponse: [
+    function transformResponse(data) {
+      /*eslint no-param-reassign:0*/
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          /* Ignore */
+        }
+      }
+      return data;
+    },
+  ],
 
   /**
    * A timeout in milliseconds to abort a request. If set to 0 (default) a
@@ -78,15 +99,17 @@ var defaults = {
 
   validateStatus: function validateStatus(status) {
     return status >= 200 && status < 300;
-  }
+  },
 };
 
+// axios 实例默认headers
 defaults.headers = {
   common: {
-    'Accept': 'application/json, text/plain, */*'
-  }
+    Accept: 'application/json, text/plain, */*',
+  },
 };
 
+// delete,get,head方法的headers[Content-Type] = {}
 utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
   defaults.headers[method] = {};
 });
