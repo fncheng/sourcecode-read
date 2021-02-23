@@ -13,6 +13,7 @@ var mergeConfig = require('./mergeConfig');
  */
 function Axios(instanceConfig) {
   this.defaults = instanceConfig;
+  // 拦截器 -- 请求拦截器，响应拦截器
   this.interceptors = {
     request: new InterceptorManager(),
     response: new InterceptorManager(),
@@ -20,6 +21,7 @@ function Axios(instanceConfig) {
 }
 
 /**
+ * 发起一个请求
  * Dispatch a request
  *
  * @param {Object} config The config specific for this request (merged with this.defaults)
@@ -77,6 +79,7 @@ Axios.prototype.getUri = function getUri(config) {
 };
 
 // Provide aliases for supported request methods
+// 迭代 'delete', 'get', 'head', 'options'等方法不需要data，参考axios请求别名
 utils.forEach(
   ['delete', 'get', 'head', 'options'],
   function forEachMethodNoData(method) {
