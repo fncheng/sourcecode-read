@@ -7,6 +7,7 @@ function InterceptorManager() {
 }
 
 /**
+ * 添加新的拦截器
  * Add a new interceptor to the stack
  *
  * @param {Function} fulfilled The function to handle `then` for a `Promise`
@@ -17,12 +18,13 @@ function InterceptorManager() {
 InterceptorManager.prototype.use = function use(fulfilled, rejected) {
   this.handlers.push({
     fulfilled: fulfilled,
-    rejected: rejected
+    rejected: rejected,
   });
   return this.handlers.length - 1;
 };
 
 /**
+ * 移除之前的拦截器
  * Remove an interceptor from the stack
  *
  * @param {Number} id The ID that was returned by `use`
@@ -34,6 +36,7 @@ InterceptorManager.prototype.eject = function eject(id) {
 };
 
 /**
+ * 循环执行 传入的fn函数
  * Iterate over all the registered interceptors
  *
  * This method is particularly useful for skipping over any
