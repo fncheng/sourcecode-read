@@ -14,7 +14,9 @@ var defaults = require('./defaults');
  */
 // 创建axios实例
 function createInstance(defaultConfig) {
+  // context 是axios拦截器的配置
   var context = new Axios(defaultConfig);
+  // 调用Axios.prototype.request,this指向为context
   var instance = bind(Axios.prototype.request, context);
 
   // Copy axios.prototype to instance
@@ -26,13 +28,17 @@ function createInstance(defaultConfig) {
   return instance;
 }
 
+// axios实例
 // Create the default instance to be exported
 var axios = createInstance(defaults);
 
 // Expose Axios class to allow class inheritance
 axios.Axios = Axios;
 
-// 创建实例-工厂模式 ，实际上是去调用 createInstance 方法
+/**
+ * 创建实例-工厂模式 ，实际上是去调用 createInstance 方法
+ * @param {Object} instanceConfig axios config，包含baseURL,timeout,headers
+ */
 // Factory for creating new instances
 axios.create = function create(instanceConfig) {
   return createInstance(mergeConfig(axios.defaults, instanceConfig));
