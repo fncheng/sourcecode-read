@@ -1,5 +1,6 @@
 'use strict';
 
+// 改变函数 fn 的this指向为thisArg 并调用，参数为args
 module.exports = function bind(fn, thisArg) {
   return function wrap() {
     var args = new Array(arguments.length);
