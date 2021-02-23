@@ -16,6 +16,7 @@ function InterceptorManager() {
  * @return {Number} An ID used to remove interceptor later
  */
 InterceptorManager.prototype.use = function use(fulfilled, rejected) {
+  // 传入fulfilled 和 rejected两个函数
   this.handlers.push({
     fulfilled: fulfilled,
     rejected: rejected,
